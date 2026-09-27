@@ -1,0 +1,52 @@
+<Window x:Class="UE5PerfMonitor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:charts="clr-namespace:UE5PerfMonitor.Controls"
+        Title="UE5 Performance Monitor" Height="900" Width="1440" MinHeight="760" MinWidth="1180"
+        Background="#0B111B" Foreground="#E5EDF7" FontFamily="Segoe UI" WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <SolidColorBrush x:Key="Panel" Color="#141D2B"/><SolidColorBrush x:Key="Muted" Color="#91A2B7"/>
+        <Style TargetType="Button"><Setter Property="Foreground" Value="#EAF2FC"/><Setter Property="Background" Value="#24344A"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="16,10"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Cursor" Value="Hand"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Setter.Value></Setter></Style>
+        <Style TargetType="TextBox"><Setter Property="Foreground" Value="#E5EDF7"/><Setter Property="Background" Value="#0F1723"/><Setter Property="BorderBrush" Value="#2B394C"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Padding" Value="9,7"/></Style>
+        <Style TargetType="ComboBox"><Setter Property="Foreground" Value="#172334"/><Setter Property="Padding" Value="8,6"/></Style>
+    </Window.Resources>
+    <Grid Margin="24">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="190"/></Grid.RowDefinitions>
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <StackPanel><TextBlock Text="UE5 PERFORMANCE MONITOR" FontSize="12" FontWeight="Bold" Foreground="#71D5B2"/><TextBlock Text="黑盒性能评测" FontSize="27" FontWeight="SemiBold" Margin="0,4,0,0"/><TextBlock Text="外部采集 · 整局记录 · 异常前后快照" Foreground="{StaticResource Muted}" Margin="0,3,0,0"/></StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Border Background="#141D2B" CornerRadius="8" Padding="12,9" Margin="0,0,10,0"><StackPanel Orientation="Horizontal"><Ellipse x:Name="StatusDot" Width="8" Height="8" Fill="#75869B" Margin="0,0,8,0"/><TextBlock x:Name="SessionStatus" Text="未开始" Foreground="#BBC8D7"/></StackPanel></Border>
+                <TextBlock x:Name="ElapsedText" Text="00:00:00" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+        <Border Grid.Row="1" Background="{StaticResource Panel}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
+            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="2.2*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0"><TextBlock Text="监控目标进程" Foreground="{StaticResource Muted}" FontSize="11"/><StackPanel Orientation="Horizontal" Margin="0,5,0,0"><ComboBox x:Name="ProcessCombo" Width="350" Height="36" DisplayMemberPath="Label"/><Button Content="刷新进程" Click="RefreshProcesses_Click" Margin="8,0,0,0" Padding="12,8"/></StackPanel></StackPanel>
+                <StackPanel Grid.Column="1" Margin="24,0,18,0" VerticalAlignment="Center"><TextBlock Text="内存预警 (GB)" Foreground="{StaticResource Muted}" FontSize="11"/><TextBox x:Name="MemoryThresholdBox" Text="8" Width="86" Margin="0,5,0,0"/></StackPanel>
+                <StackPanel Grid.Column="2" Margin="0,0,18,0" VerticalAlignment="Center"><TextBlock Text="系统 CPU (%)" Foreground="{StaticResource Muted}" FontSize="11"/><TextBox x:Name="CpuThresholdBox" Text="95" Width="74" Margin="0,5,0,0"/></StackPanel>
+                <StackPanel Grid.Column="3" Margin="0,0,18,0" VerticalAlignment="Center"><TextBlock Text="PresentMon (可选)" Foreground="{StaticResource Muted}" FontSize="11"/><StackPanel Orientation="Horizontal" Margin="0,5,0,0"><TextBox x:Name="PresentMonPathBox" Width="155" Height="34" ToolTip="选择 PresentMon 2.x 的 x64 控制台程序"/><Button Content="选择" Click="BrowsePresentMon_Click" Padding="10,7" Margin="5,0,0,0"/></StackPanel></StackPanel>
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center"><Button x:Name="StartButton" Content="▶  开始评测" Background="#168A69" Click="Start_Click" Margin="0,14,8,0"/><Button x:Name="StopButton" Content="■  结束并生成报告" Background="#553344" Click="Stop_Click" IsEnabled="False" Margin="0,14,0,0"/></StackPanel>
+            </Grid>
+        </Border>
+        <UniformGrid Grid.Row="2" Columns="4" Margin="0,0,0,16">
+            <Border Background="{StaticResource Panel}" CornerRadius="11" Padding="16" Margin="0,0,12,0"><StackPanel><TextBlock Text="游戏进程内存 · 工作集" Foreground="{StaticResource Muted}"/><StackPanel Orientation="Horizontal" Margin="0,9,0,0"><TextBlock x:Name="GameMemoryValue" Text="—" FontSize="28" FontWeight="SemiBold"/><TextBlock Text=" GB" Foreground="{StaticResource Muted}" VerticalAlignment="Bottom" Margin="4,0,0,5"/></StackPanel><TextBlock x:Name="GameMemorySub" Text="私有内存 —" Foreground="#75869B" FontSize="11" Margin="0,4,0,0"/></StackPanel></Border>
+            <Border Background="{StaticResource Panel}" CornerRadius="11" Padding="16" Margin="0,0,12,0"><StackPanel><TextBlock Text="系统 CPU" Foreground="{StaticResource Muted}"/><StackPanel Orientation="Horizontal" Margin="0,9,0,0"><TextBlock x:Name="SystemCpuValue" Text="—" FontSize="28" FontWeight="SemiBold"/><TextBlock Text=" %" Foreground="{StaticResource Muted}" VerticalAlignment="Bottom" Margin="4,0,0,5"/></StackPanel><TextBlock x:Name="SystemCpuSub" Text="全机逻辑处理器总占用" Foreground="#75869B" FontSize="11" Margin="0,4,0,0"/></StackPanel></Border>
+            <Border Background="{StaticResource Panel}" CornerRadius="11" Padding="16" Margin="0,0,12,0"><StackPanel><TextBlock Text="游戏进程 CPU" Foreground="{StaticResource Muted}"/><StackPanel Orientation="Horizontal" Margin="0,9,0,0"><TextBlock x:Name="GameCpuValue" Text="—" FontSize="28" FontWeight="SemiBold"/><TextBlock Text=" %" Foreground="{StaticResource Muted}" VerticalAlignment="Bottom" Margin="4,0,0,5"/></StackPanel><TextBlock Text="单逻辑核心 = 100%，多核可超过 100%" Foreground="#75869B" FontSize="10" Margin="0,4,0,0"/></StackPanel></Border>
+            <Border Background="{StaticResource Panel}" CornerRadius="11" Padding="16"><StackPanel><TextBlock Text="实时帧率" Foreground="{StaticResource Muted}"/><StackPanel Orientation="Horizontal" Margin="0,9,0,0"><TextBlock x:Name="FpsValue" Text="—" FontSize="28" FontWeight="SemiBold"/><TextBlock Text=" FPS" Foreground="{StaticResource Muted}" VerticalAlignment="Bottom" Margin="4,0,0,5"/></StackPanel><TextBlock x:Name="FpsSub" Text="系统内存 —% · 帧时间 — ms" Foreground="#75869B" FontSize="11" Margin="0,4,0,0"/></StackPanel></Border>
+        </UniformGrid>
+        <Grid Grid.Row="3" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="1.15*"/><ColumnDefinition Width="1*"/></Grid.ColumnDefinitions>
+            <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+            <Border Grid.Column="0" Grid.Row="0" Background="{StaticResource Panel}" CornerRadius="11" Margin="0,0,12,12" Padding="2"><charts:LineChart x:Name="CpuChart" Title="CPU 使用率" Unit="% · 1 秒采样" Maximum="100"/></Border>
+            <Border Grid.Column="1" Grid.Row="0" Background="{StaticResource Panel}" CornerRadius="11" Margin="0,0,0,12" Padding="2"><charts:LineChart x:Name="MemoryChart" Title="内存趋势" Unit="GB" Maximum="32"/></Border>
+            <Border Grid.Column="0" Grid.Row="1" Background="{StaticResource Panel}" CornerRadius="11" Margin="0,0,12,0" Padding="2"><charts:LineChart x:Name="SystemMemoryChart" Title="系统内存压力" Unit="%" Maximum="100"/></Border>
+            <Border Grid.Column="1" Grid.Row="1" Background="{StaticResource Panel}" CornerRadius="11" Padding="2"><Grid><charts:LineChart x:Name="FpsChart" Title="帧率 / 帧时间" Unit="接入 PresentMon 后显示" Maximum="120"/><StackPanel x:Name="FpsOverlay" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,30,20,0"><TextBlock Text="选择 PresentMon 2.x 后采集 FPS" Foreground="#AAB9CA" FontSize="14" HorizontalAlignment="Center"/><TextBlock Text="帧间隔超过 50 ms 记录为严重卡顿事件" Foreground="#6F8298" FontSize="11" Margin="0,6,0,0" HorizontalAlignment="Center"/></StackPanel></Grid></Border>
+        </Grid>
+        <Border Grid.Row="4" Background="{StaticResource Panel}" CornerRadius="11" Padding="15">
+            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="1.1*"/><ColumnDefinition Width="1.8*"/></Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0"><TextBlock Text="本次评测" FontWeight="SemiBold" FontSize="15"/><TextBlock x:Name="SessionInfoText" Text="开始评测后将记录整次运行数据。异常触发时保存触发前 15 秒至触发时的指标快照。" TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,8,22,0"/><TextBlock x:Name="OutputPathText" Text="报告保存到：文档 / UE5PerfMonitor / Sessions" Foreground="#6F8298" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/></StackPanel>
+                <StackPanel Grid.Column="1"><DockPanel><TextBlock Text="告警与事件" FontWeight="SemiBold" FontSize="15"/><TextBlock x:Name="AlertCountText" Text="0 条" Foreground="{StaticResource Muted}" HorizontalAlignment="Right" DockPanel.Dock="Right"/></DockPanel><ListBox x:Name="AlertsList" Background="#0F1723" BorderThickness="0" Foreground="#D5DFEA" Margin="0,8,0,0" FontSize="11"/></StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
